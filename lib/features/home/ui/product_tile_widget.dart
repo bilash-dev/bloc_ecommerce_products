@@ -1,3 +1,4 @@
+import 'package:bloc_ecommerce_project/features/home/bloc/home_event.dart';
 import 'package:bloc_ecommerce_project/features/home/models/home_products_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -42,8 +43,12 @@ class ProductTileWidget extends StatelessWidget {
               Text("\$" + productsModel.price.toString()),
               Row(
                 children: [
-                  IconButton(onPressed: (){}, icon: const Icon(Icons.favorite_outline_outlined)),
-                  IconButton(onPressed: (){}, icon: const Icon(Icons.shopping_cart_outlined))
+                  IconButton(onPressed: (){
+                    homeBloc.add(HomeProductWishlistButtonClickEvent(productsModel));
+                  }, icon: const Icon(Icons.favorite_outline_outlined)),
+                  IconButton(onPressed: (){
+                    homeBloc.add(HomeProductCartButtonClickEvent(productsModel));
+                  }, icon: const Icon(Icons.shopping_cart_outlined))
                 ],
               )
             ],

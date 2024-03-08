@@ -37,6 +37,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ],),
       body: BlocConsumer<HomeBloc, HomeState>(
         listener: (context, state){
+          if(state is HomeProductWishlistClickState){
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('click product wishlisted')));
+          }else if(state is HomeProductCartClickState){
+            print('ok');
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('click product carted')));
+          }
 
         },
         builder: (context, state){
