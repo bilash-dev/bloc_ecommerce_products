@@ -6,6 +6,9 @@ import 'package:bloc_ecommerce_project/repo/products_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../cart/ui/cart_screen.dart';
+import '../../wishlist/ui/wishlist_screen.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -15,53 +18,78 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   ProductsRepo productsRepo = ProductsRepo();
-  HomeBloc homeBloc = HomeBloc(ProductsRepo());
+  final HomeBloc homeBloc = HomeBloc(ProductsRepo());
 
   @override
   void initState() {
-    context.read<HomeBloc>().add(HomeInitialEvent());
+    homeBloc.add(HomeInitialEvent());
     super.initState();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title:  const Text('Product Items'),
-      backgroundColor: Colors.teal,
-      actions: [
-        IconButton(onPressed: (){
-          productsRepo.getProducts();
-          // print('wishlist clicked');
-        }, icon: const Icon(Icons.favorite_border_outlined)),
-        IconButton(onPressed: (){}, icon: const Icon(Icons.shopping_cart_outlined))
-      ],),
-      body: BlocConsumer<HomeBloc, HomeState>(
-        listener: (context, state){
-          if(state is HomeProductWishlistClickState){
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('click product wishlisted')));
-          }else if(state is HomeProductCartClickState){
-            print('ok');
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('click product carted')));
-          }
-
-        },
-        builder: (context, state){
-          if(state is HomeInitialState){
-            return const Center(child: CircularProgressIndicator.adaptive(),);
-          }else if(state is HomeSuccessState){
-            return ListView.builder(
-              itemBuilder: (context, index){
-                return ProductTileWidget(
-                    productsModel: state.productsModel[index],
-                    homeBloc: homeBloc);
-              },
+    return BlocConsumer<HomeBloc, HomeState>(
+      bloc: homeBloc,
+      listenWhen: (previous, current) => current is HomeActionState,
+      buildWhen: (previous, current) => current is! HomeActionState,
+      listener: (context, state) {
+        if (state is HomeNavigateToCartPageActionState) {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Cart()));
+        } else if (state is HomeNavigateToWishlistPageActionState) {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Wishlist()));
+        } else if (state is HomeProductItemCartedActionState) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Item Carted')));
+        } else if (state is HomeProductItemWishlistedActionState) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Item Wishlisted')));
+        }
+      },
+      builder: (context, state) {
+        switch (state.runtimeType) {
+          case HomeLoadingState:
+            return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ));
+          case HomeLoadedSuccessState:
+            final successState = state as HomeLoadedSuccessState;
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.teal,
+                title: const Text('Products App'),
+                actions: [
+                  IconButton(
+                      onPressed: () {
+                        homeBloc.add(HomeWishlistButtonNavigateEvent());
+                      },
+                      icon: Icon(Icons.favorite_border)),
+                  IconButton(
+                      onPressed: () {
+                        homeBloc.add(HomeCartButtonNavigateEvent());
+                      },
+                      icon: Icon(Icons.shopping_cart_outlined)),
+                ],
+              ),
+              body: ListView.builder(
+                  itemCount: successState.productsModel.length,
+                  itemBuilder: (context, index) {
+                    return ProductTileWidget(
+                        homeBloc: homeBloc,
+                        productsModel: successState.productsModel[index]);
+                  }),
             );
-          }else if(state is HomeErrorState){
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.errorMessage)));
-          }
-          return const SizedBox();
-        },
-      ),
+
+          case HomeErrorState:
+            return Scaffold(body: Center(child: Text('Error')));
+          default:
+            return SizedBox();
+        }
+      },
     );
   }
 }

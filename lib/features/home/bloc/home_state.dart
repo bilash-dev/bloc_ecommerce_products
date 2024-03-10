@@ -4,11 +4,13 @@ abstract class HomeState{}
 
 abstract class HomeActionState extends HomeState{}
 
-class HomeInitialState extends HomeState{}
+class HomeInitial extends HomeState {}
 
-class HomeSuccessState extends HomeState{
+class HomeLoadingState extends HomeState {}
+
+class HomeLoadedSuccessState extends HomeState{
   final List<ProductsModel> productsModel;
-  HomeSuccessState(this.productsModel);
+  HomeLoadedSuccessState(this.productsModel);
 }
 
 class HomeErrorState extends HomeState{
@@ -16,8 +18,14 @@ class HomeErrorState extends HomeState{
   HomeErrorState(this.errorMessage);
 }
 
-class HomeProductWishlistClickState extends HomeActionState{}
+class HomeProductItemWishlistedActionState extends HomeActionState {}
 
-class HomeProductCartClickState extends HomeActionState{}
+class HomeProductItemCartedActionState extends HomeActionState {}
+
+class HomeNavigateToWishlistPageActionState extends HomeActionState {}
+
+class HomeNavigateToCartPageActionState extends HomeActionState {}
+
+
 
 
